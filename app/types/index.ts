@@ -8,6 +8,10 @@ export interface Restaurant {
     price_level: string | null;
     website: string | null;
   }
+
+  export interface RestaurantWithCount extends Restaurant {
+    recommendation_count: number;
+  }
   
   export interface Prompt {
     id: string;

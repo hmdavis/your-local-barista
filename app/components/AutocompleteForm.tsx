@@ -1,22 +1,36 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { supabase } from "../lib/supabaseClient";
 import { Restaurant, User } from "../types";
 
-const libraries: ("places")[] = ["places"];
-
 interface AutocompleteFormProps {
     promptId: string;
 }
-
 
 const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
     const [inputValue, setInputValue] = useState<string>("");
     const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.error("Error getting user location:", error);
+                }
+            );
+        }
+    }, []);
 
     const handleLoad = (autocomplete: google.maps.places.Autocomplete) => {
         setAutocomplete(autocomplete);
@@ -82,7 +96,8 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
 
     const autocompleteOptions = {
         types: ['bar', 'restaurant'],
-        fields: ['place_id', 'name', 'formatted_address', 'geometry', 'price_level', 'icon', 'website', 'types']
+        fields: ['place_id', 'name', 'formatted_address', 'geometry', 'price_level', 'icon', 'website', 'types'],
+        locationBias: userLocation ? { center: userLocation, radius: 30000 } : undefined
     };
 
     const getPriceLevel = (level: number | undefined) => {
@@ -91,7 +106,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     };
 
     return (
-        <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string} libraries={libraries}>
+        <>
             <Autocomplete onLoad={handleLoad} onPlaceChanged={handlePlaceChanged} options={autocompleteOptions}>
                 <input
                     type="text"
@@ -106,7 +121,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                         color: "white",
                         border: "1px solid white",
                         borderRadius: "4px",
-                      }}
+                    }}
                     autoComplete="off"
                     data-form-type="other"
                 />
@@ -140,7 +155,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                     )}
                 </div>
             )}
-        </LoadScript>
+        </>
     );
 };
 

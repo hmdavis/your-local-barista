@@ -29,7 +29,6 @@ export default function RootLayout({
 
         <footer style={{ marginTop: "20px" }}>
           <DynamicSpotifyEmbed />
-          {/* <DynamicBuyMeACoffeeButton /> */}
           <p>© 2024 @hotmdog. All rights reserved.</p>
           <DynamicBuyAMeCoffeeButton />
         </footer>
