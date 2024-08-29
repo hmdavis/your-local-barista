@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { RestaurantWithCount, Prompt } from "../types";
 import Map from "../components/Map";
 import { MapPin } from "lucide-react";
+import Badge from './Badge';
 
 interface ResultsProps {
     prompt: Prompt;
@@ -10,6 +11,8 @@ interface ResultsProps {
 
 const Results: React.FC<ResultsProps> = ({ prompt }) => {
     const [recommendations, setRecommendations] = useState<RestaurantWithCount[]>([]);
+    const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantWithCount | null>(null);
+    const lastRestaurantElementRef = useRef<HTMLLIElement>(null);
 
     useEffect(() => {
         const fetchRecommendations = async () => {
@@ -33,22 +36,29 @@ const Results: React.FC<ResultsProps> = ({ prompt }) => {
         fetchRecommendations();
     }, [prompt]);
 
+    const handleRestaurantClick = (restaurant: RestaurantWithCount) => {
+        setSelectedRestaurant(restaurant);
+    };
+
     return (
         <section className="mb-8 bg-black border border-gray-700 rounded-lg shadow-lg p-6">
             <h3 className="text-2xl font-bold mb-4 text-white">Our Spots</h3>
             <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
-                    <Map restaurants={recommendations} />
+                    <Map restaurants={recommendations} selectedRestaurant={selectedRestaurant} onRestaurantSelect={setSelectedRestaurant}/>
                 </div>
-                <div>
+                <div className="h-[500px] overflow-y-auto">
                     <ul className="bg-black rounded-lg p-4">
-                        {recommendations.map((restaurant) => (
-                            <li key={restaurant.id} className="mb-3 flex items-center">
+                        {recommendations.map((restaurant, index) => (
+                            <li
+                                key={restaurant.id}
+                                ref={index === recommendations.length - 1 ? lastRestaurantElementRef : null}
+                                className="mb-3 flex items-center cursor-pointer hover:bg-gray-800 p-2 rounded"
+                                onClick={() => handleRestaurantClick(restaurant)}
+                            >
                                 <MapPin className="mr-2 text-cyan-500" />
-                                <span className="text-white">
-                                    {restaurant.name}{" "}
-                                    <span className="font-bold">({restaurant.recommendation_count})</span>
-                                </span>
+                                <span className="text-white flex-grow">{restaurant.name}</span>
+                                <Badge count={restaurant.recommendation_count} />
                             </li>
                         ))}
                     </ul>
