@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { RestaurantWithCount } from "../types"; // Import your type
 
 interface MapProps {
@@ -61,22 +61,23 @@ const Map: React.FC<MapProps> = ({ restaurants }) => {
                     }}
                     onCloseClick={() => setSelectedRestaurant(null)}
                 >
-                    <div>
-                        <h2>{selectedRestaurant.name}</h2>
-                        <p>{selectedRestaurant.address}</p>
-                        <p>Recommendations: {selectedRestaurant.recommendation_count}</p>
+                    <div className="text-black">
+                        <h2 className="font-bold text-lg">{selectedRestaurant.name}</h2>
+                        <p className="text-sm">{selectedRestaurant.address}</p>
+                        <p className="text-sm">Recommendations: {selectedRestaurant.recommendation_count}</p>
                         {selectedRestaurant.website && (
-                            <p>
-                                <a href={selectedRestaurant.website} target="_blank" rel="noopener noreferrer">
+                            <p className="text-sm">
+                                <a href={selectedRestaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                                     Visit Website
                                 </a>
                             </p>
                         )}
-                        <p>
+                        <p className="text-sm">
                             <a
                                 href={`https://www.google.com/maps/dir/?api=1&destination=${selectedRestaurant.latitude},${selectedRestaurant.longitude}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
                             >
                                 Get Directions
                             </a>

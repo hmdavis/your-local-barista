@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { supabase } from "../lib/supabaseClient";
 import { Restaurant, User } from "../types";
+import { Search } from "lucide-react";
 
 interface AutocompleteFormProps {
     promptId: string;
@@ -15,6 +16,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+    const [countdown, setCountdown] = useState<string>("");
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -89,9 +91,30 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                 } else {
                     console.log("Recommendation saved successfully!");
                     setIsSubmitted(true);
+                    startCountdown();
                 }
             }
         }
+    };
+
+    const startCountdown = () => {
+        const updateCountdown = () => {
+            const now = new Date();
+            let target = new Date(now);
+            target.setHours(9, 0, 0, 0);
+            target.setDate(target.getDate() + (target.getHours() >= 9 ? 1 : 0));
+
+            const diff = target.getTime() - now.getTime();
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        updateCountdown();
+        const intervalId = setInterval(updateCountdown, 1000);
+        return () => clearInterval(intervalId);
     };
 
     const autocompleteOptions = {
@@ -106,56 +129,51 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     };
 
     return (
-        <>
-            <Autocomplete onLoad={handleLoad} onPlaceChanged={handlePlaceChanged} options={autocompleteOptions}>
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Enter a location"
-                    style={{
-                        width: "300px",
-                        height: "40px",
-                        padding: "10px",
-                        backgroundColor: "black",
-                        color: "white",
-                        border: "1px solid white",
-                        borderRadius: "4px",
-                    }}
-                    autoComplete="off"
-                    data-form-type="other"
-                />
-            </Autocomplete>
-            {selectedPlace && (
-                <div>
-                    <h3>Selected Place:</h3>
-                    <p>{selectedPlace.place_id}</p>
-                    <p>{selectedPlace.name}</p>
-                    <p>{selectedPlace.formatted_address}</p>
-                    <p>Latitude: {selectedPlace.geometry?.location?.lat()}</p>
-                    <p>Longitude: {selectedPlace.geometry?.location?.lng()}</p>
-                    <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
-                    <p>Icon URL: {selectedPlace.icon}</p>
-                    <p>Website: {selectedPlace.website}</p>
-                    {!isSubmitted ? (
-                        <button onClick={handleSubmit} style={{
-                            backgroundColor: "black",
-                            color: 'white',
-                            padding: '10px 20px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            border: "1px solid white"
-                        }}>
-                            Submit
-                        </button>
-                    ) : (
-                        <p>Recommendation submitted.</p>
-                    )}
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mb-4">
+            {!isSubmitted ? (
+                <>
+                    <div className="relative">
+                        <Autocomplete
+                            onLoad={handleLoad}
+                            onPlaceChanged={handlePlaceChanged}
+                            options={autocompleteOptions}
+                        >
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder="Search for a place..."
+                                className="w-full p-3 pl-10 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white placeholder-gray-500"
+                                autoComplete="off"
+                                data-form-type="other"
+                            />
+                        </Autocomplete>
+                        <Search className="absolute left-3 top-3 text-gray-400" />
+                    </div>
+                    <button
+                        type="submit"
+                        className="mt-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full"
+                        disabled={!selectedPlace}
+                    >
+                        Submit Recommendation
+                    </button>
+                </>
+            ) : (
+                <div className="text-center">
+                    <p className="text-xl font-bold mb-2">{selectedPlace?.name}</p>
+                    <p className="text-lg">Come back for your next cup in</p>
+                    <p className="text-3xl font-bold text-pink-500">{countdown}</p>
                 </div>
             )}
-        </>
+            {selectedPlace && !isSubmitted && (
+                <div className="mt-4 text-white">
+                    <h3 className="text-xl font-bold mb-2">Your rec</h3>
+                    <p>{selectedPlace.name}</p>
+                    <p>{selectedPlace.formatted_address}</p>
+                    <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
+                </div>
+            )}
+        </form>
     );
 };
 

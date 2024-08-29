@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { Restaurant, RestaurantWithCount, Prompt } from "../types";
-import Map  from "../components/Map"
+import { RestaurantWithCount, Prompt } from "../types";
+import Map from "../components/Map";
+import { MapPin } from "lucide-react";
 
 interface ResultsProps {
     prompt: Prompt;
@@ -33,28 +34,27 @@ const Results: React.FC<ResultsProps> = ({ prompt }) => {
     }, [prompt]);
 
     return (
-        <div style={{ padding: "20px" }}>
-            <h1 style={{ fontWeight: "bold", fontSize: "24px" }}>
-                What is {prompt.prompt_text}?
-            </h1>
-            <p style={{ fontSize: "14px", fontStyle: "italic", color: "#666", margin: "0" }}>
-                Next cup tomorrow at 9am.
-            </p>
-            <h2 style={{ fontWeight: "bold", fontSize: "20px" }}>
-                Top Recommended Places
-            </h2>
-            <ul>
-                {recommendations.map((restaurant) => (
-                    <li key={restaurant.id}>
-                        <h2>
-                            {restaurant.name}{" "}
-                            <span style={{ fontWeight: "bold" }}>({restaurant.recommendation_count})</span>
-                        </h2>
-                    </li>
-                ))}
-            </ul>
-            <Map restaurants={recommendations} />
-        </div>
+        <section className="mb-8 bg-black border border-gray-700 rounded-lg shadow-lg p-6">
+            <h3 className="text-2xl font-bold mb-4 text-white">Our Spots</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                    <Map restaurants={recommendations} />
+                </div>
+                <div>
+                    <ul className="bg-black rounded-lg p-4">
+                        {recommendations.map((restaurant) => (
+                            <li key={restaurant.id} className="mb-3 flex items-center">
+                                <MapPin className="mr-2 text-cyan-500" />
+                                <span className="text-white">
+                                    {restaurant.name}{" "}
+                                    <span className="font-bold">({restaurant.recommendation_count})</span>
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </section>
     );
 };
 

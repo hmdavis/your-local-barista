@@ -16,11 +16,6 @@ const Home: React.FC = () => {
   // TODO: see if logged in user already has answered prompt. if so, show them the results screen. 
   return (
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string} libraries={libraries}>
-
-      <div style={{ padding: "20px" }}>
-        <h1 style={{ fontWeight: "bold", fontSize: "24px" }}>
-          Help your local barista find places to eat.
-        </h1>
         <PromptDisplay prompt={prompt} setPrompt={setPrompt} />
         {prompt ? (
           <>
@@ -29,7 +24,6 @@ const Home: React.FC = () => {
         ) : (
           <p>Loading prompt...</p> // Display a loading message until the prompt is fetched
         )}
-      </div>
     </LoadScript>
 
   );

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { Prompt } from "../types";
 import styled from "styled-components";
+import { Coffee, Search } from "lucide-react";
 import AutocompleteForm from "./AutocompleteForm";
 
 const Container = styled.div`
@@ -18,7 +19,6 @@ const ContentWrapper = styled.div`
   align-items: center;
   gap: 20px;
 `;
-
 
 const PromptText = styled.h1`
   font-size: 2.5rem;
@@ -57,14 +57,20 @@ const PromptDisplay: React.FC<PromptDisplayProps> = ({ prompt, setPrompt }) => {
   }, [setPrompt]);
 
   return (
-    <Container>
+    <>
       {prompt && (
-        <ContentWrapper>
-        <PromptText>{prompt.prompt_text}</PromptText>
-        <AutocompleteForm promptId={prompt.id} />
-      </ContentWrapper>
+        <section className="mb-8 bg-black border border-gray-700 rounded-lg shadow-lg p-6">
+          <div className="text-sm text-gray-400 mb-4 flex items-center">
+            <Coffee className="mr-2 text-pink-500 h-4 w-4" />
+            {new Date().toLocaleDateString()} - Today's Cup
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center text-white">
+            {prompt.prompt_text}
+          </h2>
+          <AutocompleteForm promptId={prompt.id} />
+        </section>
       )}
-    </Container>
+    </>
   );
 };
 
