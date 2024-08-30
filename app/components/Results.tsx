@@ -42,7 +42,10 @@ const Results: React.FC<ResultsProps> = ({ prompt }) => {
 
     return (
         <section className="mb-8 bg-black border border-gray-700 rounded-lg shadow-lg p-6">
-            <h3 className="text-2xl font-bold mb-4 text-white">Our Spots</h3>
+            <h3 className="text-2xl font-bold mb-4 text-white flex items-center">
+                <MapPin className="mr-2 text-orange-500" size={24} />
+                The Spots
+            </h3>
             <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                     <Map restaurants={recommendations} selectedRestaurant={selectedRestaurant} onRestaurantSelect={setSelectedRestaurant}/>

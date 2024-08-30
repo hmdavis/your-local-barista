@@ -118,9 +118,16 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     };
 
     const autocompleteOptions = {
-        types: ['bar', 'restaurant'],
+        types: ['bar', 'restaurant', 'cafe', 'bakery', 'night_club'],
         fields: ['place_id', 'name', 'formatted_address', 'geometry', 'price_level', 'icon', 'website', 'types'],
-        locationBias: userLocation ? { center: userLocation, radius: 30000 } : undefined
+        bounds: {
+            north: 40.9176,
+            south: 40.4774,
+            east: -73.7004,
+            west: -74.2591,
+        },
+        strictBounds: true,
+        componentRestrictions: { country: 'us' }
     };
 
     const getPriceLevel = (level: number | undefined) => {
@@ -130,7 +137,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
 
     return (
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mb-4">
-            {!isSubmitted ? (
+            {!isSubmitted && (
                 <>
                     <div className="relative">
                         <Autocomplete
@@ -150,27 +157,28 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                         </Autocomplete>
                         <Search className="absolute left-3 top-3 text-gray-400" />
                     </div>
-                    <button
-                        type="submit"
-                        className="mt-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full"
-                        disabled={!selectedPlace}
-                    >
-                        Submit Recommendation
-                    </button>
+                    {selectedPlace && (
+                        <div className="mt-4 text-white">
+                            <p>{selectedPlace.name}</p>
+                            <p>{selectedPlace.formatted_address}</p>
+                            <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
+                        </div>
+                    )}
+                    {selectedPlace && (
+                        <button
+                            type="submit"
+                            className="mt-4 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full"
+                        >
+                            Submit
+                        </button>
+                    )}
                 </>
-            ) : (
+            )}
+            {isSubmitted && (
                 <div className="text-center">
                     <p className="text-xl font-bold mb-2">{selectedPlace?.name}</p>
                     <p className="text-lg">Come back for your next cup in</p>
                     <p className="text-3xl font-bold text-pink-500">{countdown}</p>
-                </div>
-            )}
-            {selectedPlace && !isSubmitted && (
-                <div className="mt-4 text-white">
-                    <h3 className="text-xl font-bold mb-2">Your rec</h3>
-                    <p>{selectedPlace.name}</p>
-                    <p>{selectedPlace.formatted_address}</p>
-                    <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
                 </div>
             )}
         </form>

@@ -62,7 +62,7 @@ const PromptDisplay: React.FC<PromptDisplayProps> = ({ prompt, setPrompt }) => {
         <section className="mb-8 bg-black border border-gray-700 rounded-lg shadow-lg p-6">
           <div className="text-sm text-gray-400 mb-4 flex items-center">
             <Coffee className="mr-2 text-pink-500 h-4 w-4" />
-            {new Date().toLocaleDateString()} - Today's Cup
+            {new Date().toLocaleDateString()} - Today&apos;s Cup
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center text-white">
             {prompt.prompt_text}

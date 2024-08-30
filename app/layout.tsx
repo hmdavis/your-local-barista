@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className="bg-black text-white">
         <header className="bg-gray-900 text-white p-4 sticky top-0 z-10">
           <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Your Local Barista</h1>
+            <h1 className="text-2xl">Your Local Barista</h1>
             <a
               href="https://cash.app/$hotmdog"
               target="_blank"
