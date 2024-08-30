@@ -3,6 +3,7 @@ import './globals.css';
 import dynamic from 'next/dynamic';
 import Script from 'next/script';
 import { Coffee, MapPin, Music, DollarSign, Search } from 'lucide-react'
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata = {
   title: 'My Next.js App',
