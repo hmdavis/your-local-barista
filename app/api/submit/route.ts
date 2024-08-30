@@ -1,27 +1,26 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 import { supabase } from '../../lib/supabaseClient';
 import axios from 'axios';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { name, location, userId } = req.body;
-  
-    // Validate restaurant location with Google Places API
-    const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
-    const googleUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${name} ${location}&inputtype=textquery&fields=formatted_address,name&key=${googleApiKey}`;
-  
-    const response = await axios.get(googleUrl);
-    if (response.data.candidates.length === 0) {
-      return res.status(400).json({ error: 'Invalid location' });
-    }
-  
-    // Insert into Supabase
-    const { data, error } = await supabase
-      .from('restaurants')
-      .insert([{ name, location, submitted_by: userId }]);
-  
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-  
-    res.status(200).json({ message: 'Restaurant submitted successfully!' });
+export async function POST(req: Request) {
+  const { name, location, userId } = await req.json();
+
+  // Validate restaurant location with Google Places API
+  const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+  const googleUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${name} ${location}&inputtype=textquery&fields=formatted_address,name&key=${googleApiKey}`;
+
+  const response = await axios.get(googleUrl);
+  if (response.data.candidates.length === 0) {
+    return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
   }
+
+  const { data, error } = await supabase
+    .from('restaurants')
+    .insert([{ name, location, submitted_by: userId }]);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'Restaurant submitted successfully!' }, { status: 200 });
+}
