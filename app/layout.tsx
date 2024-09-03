@@ -22,16 +22,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white">
-        <header className="bg-gray-900 text-white p-4 sticky top-0 z-10">
-          <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl">Your Local Barista</h1>
-            <a
+      <body className="bg-orange-100 text-white">
+      <header className="bg-purple-600 shadow-md p-4 sticky top-0 z-10">
+                <div className="container mx-auto flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-white">Your Local Barista</h1>
+                    <a
               href="https://cash.app/$hotmdog"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-yellow-400 text-black hover:bg-yellow-600 px-4 py-2 rounded-full flex items-center"
-            >
+              className="bg-yellow-400 text-purple-800 hover:bg-yellow-300 px-4 py-2 rounded-full transition duration-300 flex items-center font-semibold"            >
               <DollarSign className="mr-2 h-4 w-4" /> Tip Your Barista
             </a>
           </div>
@@ -49,7 +48,7 @@ export default function RootLayout({
           <DynamicBuyAMeCoffeeButton />
         </footer> */}
 
-        <footer className="bg-black text-white p-6 text-center">
+        <footer className="bg-purple-600 text-white p-6 text-center">
             <p>© 2024</p>
         </footer>
       </body>

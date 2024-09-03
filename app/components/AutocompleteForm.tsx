@@ -150,15 +150,15 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder="Search for a place..."
-                                className="w-full p-3 pl-10 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white placeholder-gray-500"
+                                className="w-full p-3 pl-10 bg-orange-50 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-800 placeholder-gray-500"
                                 autoComplete="off"
                                 data-form-type="other"
                             />
                         </Autocomplete>
-                        <Search className="absolute left-3 top-3 text-gray-400" />
+                        <Search className="absolute left-3 top-3 text-orange-400" />
                     </div>
                     {selectedPlace && (
-                        <div className="mt-4 text-white">
+                        <div className="mt-4 text-gray-500">
                             <p>{selectedPlace.name}</p>
                             <p>{selectedPlace.formatted_address}</p>
                             <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
@@ -167,8 +167,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                     {selectedPlace && (
                         <button
                             type="submit"
-                            className="mt-4 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full"
-                        >
+                            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full font-semibold"                        >
                             Submit
                         </button>
                     )}
@@ -176,9 +175,9 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
             )}
             {isSubmitted && (
                 <div className="text-center">
-                    <p className="text-xl font-bold mb-2">{selectedPlace?.name}</p>
-                    <p className="text-lg">Come back for your next cup in</p>
-                    <p className="text-3xl font-bold text-pink-500">{countdown}</p>
+                    <p className="text-3xl font-bold text-orange-500 mb-2">{selectedPlace?.name}</p>
+                    <p className="text-lg text-gray-500">Come back for your next cup in</p>
+                    <p className="text-2xl font-bold text-gray-500">{countdown}</p>
                 </div>
             )}
         </form>
