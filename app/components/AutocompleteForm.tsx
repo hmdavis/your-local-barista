@@ -5,6 +5,7 @@ import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { supabase } from "../lib/supabaseClient";
 import { Restaurant, User } from "../types";
 import { Search } from "lucide-react";
+import Auth from "./Auth";
 
 interface AutocompleteFormProps {
     promptId: string;
@@ -17,6 +18,45 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
     const [countdown, setCountdown] = useState<string>("");
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [existingRecommendation, setExistingRecommendation] = useState<Restaurant | null>(null);
+
+
+    useEffect(() => {
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (user && promptId) {
+            checkExistingRecommendation();
+        }
+    }, [user, promptId]);
+
+    const checkExistingRecommendation = async () => {
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from("recommendations")
+            .select("*, restaurants(*)")
+            .eq("prompt_id", promptId)
+            .eq("submitted_by", user.id)
+            .single();
+
+        if (error) {
+            console.error("Error checking existing recommendation:", error);
+        } else if (data) {
+            setExistingRecommendation(data.restaurants as Restaurant);
+            setIsSubmitted(true);
+            startCountdown();
+        }
+    };
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -47,7 +87,12 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     };
 
     const handleSubmit = async () => {
-        if (selectedPlace && selectedPlace.place_id) {
+        if (!user) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        if (user && selectedPlace && selectedPlace.place_id) {
             const { place_id, name, formatted_address, geometry, price_level, website } = selectedPlace;
 
             const latitude = geometry?.location?.lat();
@@ -62,7 +107,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
                     latitude,
                     longitude,
                     price_level,
-                    website
+                    website,
                 }, { onConflict: 'place_id' })
                 .select() as { data: Restaurant[] | null, error: any };
 
@@ -73,17 +118,13 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
 
                 const restaurantId = restaurantData?.[0]?.id;
 
-                // Get the current use
-                const userData = null // eventually get this from supabase
-                const user = userData as User | null;
-
                 // Insert recommendation
                 const { error: recommendationError } = await supabase
                     .from("recommendations")
                     .insert({
                         prompt_id: promptId,
                         restaurant_id: restaurantId,
-                        submitted_by: user ? user.id : null,
+                        submitted_by: user.id, // Use the current user's ID
                     });
 
                 if (recommendationError) {
@@ -136,51 +177,61 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     };
 
     return (
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mb-4">
-            {!isSubmitted && (
-                <>
-                    <div className="relative">
-                        <Autocomplete
-                            onLoad={handleLoad}
-                            onPlaceChanged={handlePlaceChanged}
-                            options={autocompleteOptions}
-                        >
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Search for a place..."
-                                className="w-full p-3 pl-10 bg-orange-50 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-800 placeholder-gray-500"
-                                autoComplete="off"
-                                data-form-type="other"
-                            />
-                        </Autocomplete>
-                        <Search className="absolute left-3 top-3 text-orange-400" />
-                    </div>
-                    {selectedPlace && (
-                        <div className="mt-4 text-gray-500">
-                            <p>{selectedPlace.name}</p>
-                            <p>{selectedPlace.formatted_address}</p>
-                            <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
+        <>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mb-4">
+            {!isSubmitted && !existingRecommendation && (
+                    <>
+                        <div className="relative">
+                            <Autocomplete
+                                onLoad={handleLoad}
+                                onPlaceChanged={handlePlaceChanged}
+                                options={autocompleteOptions}
+                            >
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    placeholder="Submit a recommendation to view results..."
+                                    className="w-full p-3 pl-10 bg-orange-50 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-800 placeholder-gray-500"
+                                    autoComplete="off"
+                                    data-form-type="other"
+                                />
+                            </Autocomplete>
+                            <Search className="absolute left-3 top-3 text-orange-400" />
                         </div>
-                    )}
-                    {selectedPlace && (
-                        <button
-                            type="submit"
-                            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full font-semibold"                        >
-                            Submit
-                        </button>
-                    )}
-                </>
-            )}
-            {isSubmitted && (
-                <div className="text-center">
-                    <p className="text-3xl font-bold text-orange-500 mb-2">{selectedPlace?.name}</p>
-                    <p className="text-lg text-gray-500">Come back for your next cup in</p>
-                    <p className="text-2xl font-bold text-gray-500">{countdown}</p>
-                </div>
-            )}
-        </form>
+                        {selectedPlace && (
+                            <div className="mt-4 text-gray-500">
+                                <p>{selectedPlace.name}</p>
+                                <p>{selectedPlace.formatted_address}</p>
+                                <p>Price Level: {getPriceLevel(selectedPlace.price_level)}</p>
+                            </div>
+                        )}
+                        {selectedPlace && (
+                            <button
+                                type="submit"
+                                className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-300 w-full font-semibold"                        >
+                                Submit
+                            </button>
+                        )}
+                    </>
+                )}
+                {(isSubmitted || existingRecommendation) && (
+                    <div className="text-center">
+                        <p className="text-3xl font-bold text-orange-500 mb-2">{selectedPlace?.name}</p>
+                        <p className="text-lg text-gray-500">Come back for your next cup in</p>
+                        <p className="text-2xl font-bold text-gray-500">{countdown}</p>
+                    </div>
+                )}
+            </form>
+            <Auth
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={() => {
+                    setIsAuthModalOpen(false);
+                    handleSubmit();
+                }}
+            />
+        </>
     );
 };
 
