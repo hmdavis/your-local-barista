@@ -179,7 +179,7 @@ const AutocompleteForm: React.FC<AutocompleteFormProps> = ({ promptId }) => {
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mb-4">
-            {!isSubmitted && !existingRecommendation && (
+            {promptId != null && !isSubmitted && !existingRecommendation && (
                     <>
                         <div className="relative">
                             <Autocomplete
